@@ -55,9 +55,6 @@ notebooks/
 
 outputs/
   model_comparison.csv               RMSE/MAE/R2/AUC for all models
-  metrics/
-    svr_metrics.json                 SVR model metrics
-    nn_metrics.json                  NN model metrics
   figures/
     01_eda/                          EDA plots
     02_lm/                           LM diagnostics and predictions
