@@ -23,7 +23,7 @@ We analyse hourly electricity demand in Zurich using open data from the City of 
 ## Data sources
 
 - **Electricity demand:** [EWZ Stromabgabe Netzebenen](https://data.stadt-zuerich.ch/dataset/ewz_stromabgabe_netzebenen_stadt_zuerich)
-- **Weather data:** [UGZ Meteorological Measurements](https://data.stadt-zuerich.ch/dataset/ugz_ogd_meteo_h1)
+- **Weather data:** [UGZ Meteodaten Stundenmittelwerte](https://data.stadt-zuerich.ch/dataset/ugz_meteodaten_stundenmittelwerte)
 
 Both datasets are open data from the City of Zurich.
 
