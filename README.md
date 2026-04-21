@@ -12,6 +12,14 @@ We analyse hourly electricity demand in Zurich using open data from the City of 
 
 ---
 
+## Research questions
+
+- **RQ1:** What weather and time variables drive hourly electricity demand, and how accurately can we predict it?
+- **RQ2:** Can we predict whether a given hour will be a peak demand hour (top 10% of all demand)?
+- **RQ3:** Can we model how many peak hours a day is likely to have?
+
+---
+
 ## Data sources
 
 - **Electricity demand:** [EWZ Stromabgabe Netzebenen](https://data.stadt-zuerich.ch/dataset/ewz_stromabgabe_netzebenen_stadt_zuerich)
