@@ -19,7 +19,7 @@ format:
 
 ## The Challenge
 
-> EWZ needs to know how much electricity Zurich will consume — hours before it happens. This report shows how machine learning can make that forecast reliable enough to act on.
+> EWZ needs to know how much electricity Zurich will consume, hours before it happens. This report shows how machine learning can make that forecast reliable enough to act on.
 
 EWZ is the municipal electricity utility of Zurich. It supplies power to roughly 400,000 residents and several thousand commercial and industrial customers across the city. Like all distribution network operators, EWZ faces the problem of matching supply to demand in real time: generation or procurement has to be arranged hours or days in advance, so an accurate forecast of what demand will look like in the coming hours has direct economic and operational value. A forecast that is too low leads to emergency procurement at unfavourable prices; one that is too high wastes money on capacity that is not needed.
 
@@ -89,7 +89,7 @@ Three response variables were constructed. `demand_log` is the natural logarithm
 
 ## When and Why Does Zurich Use Electricity?
 
-> Before fitting any model, we look at the data directly. The patterns here — daily rhythms, seasonal swings, temperature effects — are the intuition behind every model that follows.
+> Before fitting any model, we look at the data directly. The patterns here, daily rhythms, seasonal swings, temperature effects, are the intuition behind every model that follows.
 
 ### Demand Distribution
 
@@ -148,7 +148,7 @@ The daily peak count distribution is heavily zero-inflated: roughly 55% of days 
 
 ## Six Models, One Question
 
-> We apply six modelling approaches of increasing complexity. Each one answers a slightly different question about demand — and together they tell a complete story about what drives electricity consumption in Zurich.
+> We apply six modelling approaches of increasing complexity. Each one answers a slightly different question about demand, and together they tell a complete story about what drives electricity consumption in Zurich.
 
 All regression models use `demand_log` as the response variable and are trained on the 2022-2024 subset (roughly 26,000 hourly observations), with 2025 held out as a test set. Performance metrics for regression are computed in original kW units after applying exp() to the predictions.
 
@@ -167,7 +167,7 @@ R² (train) = 0.79, RMSE (test) = 7,624 kW (10.3% of mean demand), MAE = 6,126 k
 
 ![](outputs/figures/02_lm/07_lm_diagnostics.png)
 
-The residuals are roughly normally distributed and centred on zero, which supports the OLS assumptions. Note that this Q-Q plot tests the normality of the *residuals* — a core OLS assumption — which is distinct from the Q-Q plot in Section 3.1 that examined the raw demand distribution. Deviation in the tails means inference (p-values, confidence intervals) may be unreliable for the most extreme observations. The scale-location plot shows mild heteroscedasticity: residual variance is higher at the top of the fitted value range, corresponding to winter peak hours.
+The residuals are roughly normally distributed and centred on zero, which supports the OLS assumptions. Note that this Q-Q plot tests the normality of the *residuals*, a core OLS assumptionwhich is distinct from the Q-Q plot in Section 3.1 that examined the raw demand distribution. Deviation in the tails means inference (p-values, confidence intervals) may be unreliable for the most extreme observations. The scale-location plot shows mild heteroscedasticity: residual variance is higher at the top of the fitted value range, corresponding to winter peak hours.
 
 ![](outputs/figures/02_lm/08_lm_pred_vs_actual.png)
 
@@ -179,7 +179,7 @@ The cyclic hour features dominate the model. Temperature has a coefficient of -0
 
 #### Cyclic encoding limitation
 
-A single sine/cosine pair (one harmonic) can only represent a unimodal daily pattern — one peak and one trough per 24 hours. Zurich's electricity demand follows a bimodal daily curve however, with a morning peak (~8–9h) and an evening peak (~19–20h). A single harmonic cannot fit both peaks simultaneously. Higher-order Fourier terms or treating hour as a categorical variable would capture this more accurately.
+A single sine/cosine pair (one harmonic) can only represent a unimodal daily pattern, one peak and one trough per 24 hours. Zurich's electricity demand follows a bimodal daily curve however, with a morning peak (~8–9h) and an evening peak (~19–20h). A single harmonic cannot fit both peaks simultaneously. Higher-order Fourier terms or treating hour as a categorical variable would capture this more accurately.
 
 
 ### GLM Poisson
@@ -196,11 +196,11 @@ RMSE = 2.58 h/day, MAE = 1.44 h/day, R² = 0.69. Overdispersion ratio = 1.82.
 
 ![](outputs/figures/03_poisson/09_poisson_diagnostics.png)
 
-The rootogram shows the model fits the 0-2 range well but underestimates days with 5 or more peak hours. The deviance residual plot shows more spread than expected from a well-calibrated Poisson model — the visual signature of overdispersion.
+The rootogram shows the model fits the 0-2 range well but underestimates days with 5 or more peak hours. The deviance residual plot shows more spread than expected from a well-calibrated Poisson modelthe visual signature of overdispersion.
 
 #### Overdispersion note
 
-The Poisson model assumes variance equals the mean. With a dispersion ratio of 1.82, the data has about 80% more variance than the model expects — a known limitation compounded by the zero-inflation in the target. A **Negative Binomial GLM** would be the technically superior alternative, as it adds a free dispersion parameter that absorbs this extra variance and produces better-calibrated standard errors.
+The Poisson model assumes variance equals the mean. With a dispersion ratio of 1.82, the data has about 80% more variance than the model expects a known limitation compounded by the zero-inflation in the target. A **Negative Binomial GLM** would be the technically superior alternative, as it adds a free dispersion parameter that absorbs this extra variance and produces better-calibrated standard errors.
 
 ![](outputs/figures/03_poisson/10_poisson_pred_vs_actual.png)
 
@@ -229,7 +229,7 @@ The calibration curve shows predicted probabilities tracking observed frequencie
 
 ![](outputs/figures/04_binomial/12_binomial_roc_cm.png)
 
-The ROC curve at AUC 0.96 is excellent for a model using only weather and time features. The confusion matrix at threshold 0.5 shows 97% recall for non-peak hours but 65% recall for actual peak hours. Moving the threshold from 0.5 to around 0.3 would substantially increase peak recall at the cost of more false alarms — acceptable in operational contexts where missing a peak is more costly than a false alert.
+The ROC curve at AUC 0.96 is excellent for a model using only weather and time features. The confusion matrix at threshold 0.5 shows 97% recall for non-peak hours but 65% recall for actual peak hours. Moving the threshold from 0.5 to around 0.3 would substantially increase peak recall at the cost of more false alarms acceptable in operational contexts where missing a peak is more costly than a false alert.
 
 #### Coefficient interpretation
 
@@ -269,7 +269,7 @@ The GAM reduces RMSE from 7,624 kW (LM) to 7,200 kW, a 5.5% improvement. The two
 
 #### Approach
 
-Support vector regression (SVR) with an RBF kernel maps input features into a high-dimensional space where complex non-linear patterns become linearly separable. The RBF kernel computes similarity between two observations as exp(-gamma * ||x - x'||²): training points close together in feature space have high similarity and therefore influence each other's predictions strongly. SVR training is O(n²) in the number of observations, which is prohibitive on 26,000 rows. We drew a subsample of 10,000 points from the training set using np.sort on the drawn indices to preserve temporal order, then ran a grid search over C in [0.1, 1, 10, 100] and gamma in ['scale', 0.01, 0.1] to find the best hyperparameters. Lag features (demand_log at t-1, t-24, and t-168) were added to give the model memory of recent demand — the same lag structure used in the Neural Network.
+Support vector regression (SVR) with an RBF kernel maps input features into a high-dimensional space where complex non-linear patterns become linearly separable. The RBF kernel computes similarity between two observations as exp(-gamma * ||x - x'||²): training points close together in feature space have high similarity and therefore influence each other's predictions strongly. SVR training is O(n²) in the number of observations, which is prohibitive on 26,000 rows. We drew a subsample of 10,000 points from the training set using np.sort on the drawn indices to preserve temporal order, then ran a grid search over C in [0.1, 1, 10, 100] and gamma in ['scale', 0.01, 0.1] to find the best hyperparameters. Lag features (demand_log at t-1, t-24, and t-168) were added to give the model memory of recent demand, the same lag structure used in the Neural Network.
 
 #### Results
 
@@ -313,7 +313,7 @@ The NN performs between the parametric models and the SVM: RMSE 5,384 kW versus 
 
 ### Cross-Validation
 
-> A single test set result could be lucky. Cross-validation tests the model across multiple time windows — giving us confidence that the SVM's performance is consistent, not a one-off.
+> A single test set result could be lucky. Cross-validation tests the model across multiple time windows giving us confidence that the SVM's performance is consistent, not a one-off.
 
 To validate the kernel choice and check that the RBF result is not specific to a single train-test split, we ran a TimeSeriesSplit cross-validation on the training data (2022-2024) comparing three kernels: linear, RBF (C=100, gamma=0.01), and polynomial of degree 3. The same 10K temporal subsample was used for all three kernels to keep the comparison fair.
 
@@ -334,11 +334,11 @@ The cross-validation confirms that none of the three kernels degrades badly on a
 
 ## Which Model Should EWZ Trust?
 
-> Six models, six perspectives. Here we compare them directly — and explain what each result means for real-world grid operations.
+> Six models, six perspectives. Here we compare them directly, and explain what each result means for real-world grid operations.
 
 ![](outputs/figures/09_conclusions/model_comparison.png)
 
-**Why only 4 models appear in the RMSE chart:** The GLM Poisson and GLM Binomial are excluded from the visual RMSE comparison because they address different tasks — count prediction and binary classification respectively — and are evaluated on entirely different metrics. Including them in the same RMSE axis would be misleading. Their performance is reported separately below.
+**Why only 4 models appear in the RMSE chart:** The GLM Poisson and GLM Binomial are excluded from the visual RMSE comparison because they address different tasks, count prediction and binary classification respectively, and are evaluated on entirely different metrics. Including them in the same RMSE axis would be misleading. Their performance is reported separately below.
 
 **Regression models (target: demand in kW)**
 
@@ -358,9 +358,9 @@ The cross-validation confirms that none of the three kernels degrades badly on a
 | GLM Binomial | is_peak (binary) | AUC | 0.96 |
 | GLM Binomial | | Accuracy | 94% |
 
-The four regression models show a clear progression: each step up in complexity reduces test RMSE. The LM establishes a baseline at 7,624 kW. The GAM's non-linear splines reduce RMSE by 5.5%, with most of the gain coming from the temperature curve. The biggest jump comes with the SVM and NN, which reduce RMSE by 88% and 29% respectively over the LM — capturing non-linear interactions between temperature, hour, and season that additive models cannot represent.
+The four regression models show a clear progression: each step up in complexity reduces test RMSE. The LM establishes a baseline at 7,624 kW. The GAM's non-linear splines reduce RMSE by 5.5%, with most of the gain coming from the temperature curve. The biggest jump comes with the SVM and NN, which reduce RMSE by 88% and 29% respectively over the LM, capturing non-linear interactions between temperature, hour, and season that additive models cannot represent.
 
-> **Key finding:** The Neural Network explains 97% of variance in hourly demand. With a mean load of approximately 74,000 kW, its RMSE of 5,384 kW corresponds to roughly **7.3% of mean demand** — a strong result for operational grid planning at EWZ.
+> **Key finding:** The Neural Network explains 97% of variance in hourly demand. With a mean load of approximately 74,000 kW, its RMSE of 5,384 kW corresponds to roughly **7.3% of mean demand** a strong result for operational grid planning at EWZ.
 
 The SVM achieves the lowest RMSE overall (881 kW, 1.2% of mean demand). Both the SVM and NN used lagged demand features (t-1, t-24, t-168), making the comparison between them fair on that dimension. The SVM's advantage over the NN likely reflects the strength of the RBF kernel as a non-parametric smoother for this type of structured tabular data.
 
