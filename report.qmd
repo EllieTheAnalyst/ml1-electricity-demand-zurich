@@ -196,7 +196,7 @@ RMSE = 2.58 h/day, MAE = 1.44 h/day, R² = 0.69. Overdispersion ratio = 1.82.
 
 ![](outputs/figures/03_poisson/09_poisson_diagnostics.png)
 
-The rootogram shows the model fits the 0-2 range well but underestimates days with 5 or more peak hours. The deviance residual plot shows more spread than expected from a well-calibrated Poisson modelthe visual signature of overdispersion.
+The rootogram shows the model fits the 0-2 range well but underestimates days with 5 or more peak hours. The deviance residual plot shows more spread than expected from a well-calibrated Poisson model the visual signature of overdispersion.
 
 #### Overdispersion note
 
@@ -204,7 +204,7 @@ The Poisson model assumes variance equals the mean. With a dispersion ratio of 1
 
 ![](outputs/figures/03_poisson/10_poisson_pred_vs_actual.png)
 
-The weekly aggregated predictions track the seasonal pattern well. The model correctly forecasts near-zero peak counts through June-September 2025 and rising counts from October onward. It underestimates the highest winter weeks and overestimates some intermediate periods.
+For the test set (evaluating unseen 2025 data), We prioritized Mean Absolute Error (MAE). MAE provides a direct, highly interpretable metric of real-world performance: exactly how many peak hours per day our forecast is off by. The weekly aggregated predictions track the seasonal pattern well. The model correctly forecasts near-zero peak counts through June-September 2025 and rising counts from October onward. It underestimates the highest winter weeks and overestimates some intermediate periods.
 
 #### Coefficient interpretation
 
