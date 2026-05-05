@@ -237,31 +237,29 @@ Temperature has an odds ratio of exp(-0.172) = 0.84: each 1°C increase reduces 
 
 
 ### GAM
-
 <div class="lead-tag">Lead: Paula Barghout</div>
 
 #### Approach
 
-A generalised additive model replaces the global linear slope of each predictor with a smooth, data-driven function estimated from splines. This makes GAMs a natural bridge between the fully parametric LM and the fully non-parametric SVM: they can capture the non-linear temperature-demand relationship identified in the EDA while keeping the model interpretable through partial dependence plots. We used LinearGAM from the pygam library with spline terms for temperature, humidity, radiation, and the cyclic hour and month features. The smoothing parameter lambda was selected via grid search over 25 values using generalised cross-validation (GCV selected lambda = 0.032).
+The idea behind the GAM was simple: give the model the right amount of freedom for each feature. For complex weather variables like temperature and solar radiation, we let it draw whatever curve the data demanded. For calendar patterns like hour of day and month (which follow known cycles) we kept it constrained. This way the model stays flexible where it needs to be, and disciplined where it should be.
+
+We also gave it memory. By adding lag24 (same hour yesterday) and lag168 (same hour last week), the model learns that electricity demand today is strongly shaped by what happened in the same patterns 24 and 168 hours before.
 
 #### Results
 
-R² (train) = 0.81, RMSE (test) = 7,200 kW (9.7% of mean demand), MAE = 5,829 kW.
+R² (test) = 0.939, RMSE = 3,861 kW, MAE = 2,596 kW — trained on 2022–2024,tested on 2025.
 
-![](outputs/figures/05_gam/13_gam_pdp.png)
+![](outputs/figures/05_gam/05_13_gam_pdp.png)
 
-The partial dependence plots show the fitted smooth effect of each predictor on demand_log, holding all other predictors at their median values. Temperature shows a clear J-shape: demand increases steeply below about 5°C, stays relatively flat between 10 and 25°C, and rises again above 30°C. The steep low-temperature section corresponds to heating load switching on; the flat middle range is the comfort zone where neither heating nor cooling is needed; and the slight high-temperature upturn reflects air conditioning and industrial cooling. This is the most important result from the GAM: it demonstrates concretely that the linear slope in the OLS model systematically misrepresents the extremes.
+The partial dependence plots tell the story clearly. Temperature shows a U-shape: demand spikes in the cold (heating), dips in mild weather, and rises again in the heat (cooling). This is exactly what a linear model cannot capture, and exactly why we needed a GAM. Humidity and solar radiation are nearly flat, once temperature and the lag features are in the model, they add almost nothing. lag24 is the steepest curve of all: yesterday's demand at this hour is the single strongest predictor of today's.
 
-Humidity shows a mild positive smooth effect that flattens above 70%. Solar radiation has a negative partial effect concentrated in the 200-800 W/m² range, consistent with the contribution of rooftop solar at midday. The hour cyclic features reproduce the double-peak shape clearly in the partial plots.
+![](outputs/figures/05_gam/05_14_gam_diagnostics.png)
 
-![](outputs/figures/05_gam/14_gam_diagnostics.png)
+The GAM summary confirmed all smooth terms have effective degrees of freedom between 14.8 and 15.8, well above 1, meaning every spline is genuinely non-linear and earning its place. Residuals show no systematic trend, though the ACF reveals autocorrelation at 24h and 48h lags, expected for hourly energy data.
 
-The GAM residual diagnostics look similar to those from the LM. Residuals are close to normally distributed in the bulk, with the same upper tail excess at very high demand hours. The residuals vs fitted values plot shows no strong trend, which means the spline terms are capturing the systematic curvature that was visible in the LM diagnostics.
+![](outputs/figures/05_gam/05_15_gam_pred_vs_actual.png)
 
-![](outputs/figures/05_gam/15_gam_pred_vs_actual.png)
-
-The GAM reduces RMSE from 7,624 kW (LM) to 7,200 kW, a 5.5% improvement. The two-week time series shows nearly overlapping predictions from the GAM and LM, with the GAM fitting the coldest mornings slightly better. The systematic underprediction at the very highest demand hours persists in both models, pointing to the need for interaction effects or more expressive model classes.
-
+The result speaks for itself: RMSE drops from 7,624 kW (LM) to 3,861 kW, a 49% improvement. Train and test R² differ by only 0.002, confirming the model generalises cleanly to 2025 with no overfitting.
 
 ### SVM
 
