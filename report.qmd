@@ -196,7 +196,7 @@ RMSE = 2.58 h/day, MAE = 1.44 h/day, R² = 0.69. Overdispersion ratio = 1.82.
 
 ![](outputs/figures/03_poisson/09_poisson_diagnostics.png)
 
-The rootogram shows the model fits the 0-2 range well but underestimates days with 5 or more peak hours. The deviance residual plot shows more spread than expected from a well-calibrated Poisson model the visual signature of overdispersion.
+The rootogram shows the model fits the 0-2 range well but underestimates days with 5 or more peak hours. The deviance residual plot shows more spread than expected from a well-calibrated Poisson modelthe visual signature of overdispersion.
 
 #### Overdispersion note
 
@@ -204,7 +204,7 @@ The Poisson model assumes variance equals the mean. With a dispersion ratio of 1
 
 ![](outputs/figures/03_poisson/10_poisson_pred_vs_actual.png)
 
-For the test set (evaluating unseen 2025 data), We prioritized Mean Absolute Error (MAE). MAE provides a direct, highly interpretable metric of real-world performance: exactly how many peak hours per day our forecast is off by. The weekly aggregated predictions track the seasonal pattern well. The model correctly forecasts near-zero peak counts through June-September 2025 and rising counts from October onward. It underestimates the highest winter weeks and overestimates some intermediate periods.
+The weekly aggregated predictions track the seasonal pattern well. The model correctly forecasts near-zero peak counts through June-September 2025 and rising counts from October onward. It underestimates the highest winter weeks and overestimates some intermediate periods.
 
 #### Coefficient interpretation
 
@@ -237,29 +237,31 @@ Temperature has an odds ratio of exp(-0.172) = 0.84: each 1°C increase reduces 
 
 
 ### GAM
+
 <div class="lead-tag">Lead: Paula Barghout</div>
 
 #### Approach
 
-The idea behind the GAM was simple: give the model the right amount of freedom for each feature. For complex weather variables like temperature and solar radiation, we let it draw whatever curve the data demanded. For calendar patterns like hour of day and month (which follow known cycles) we kept it constrained. This way the model stays flexible where it needs to be, and disciplined where it should be.
+The GAM was built around one core idea: give the model the right amount of freedom depending on what it is learning. Weather variables like temperature get full flexibility to curve however the data wants. Calendar patterns like hour and month get constrained to known cycles, so the model stays disciplined where the patterns are predictable.
 
-We also gave it memory. By adding lag24 (same hour yesterday) and lag168 (same hour last week), the model learns that electricity demand today is strongly shaped by what happened in the same patterns 24 and 168 hours before.
+We also gave it memory. Two lag features capture the natural rhythm of electricity consumption: lag24 (same hour yesterday) for the daily cycle, and lag168 (same hour last week) for the weekly contrast between workdays and weekends. This is the main reason the GAM outperforms the LM, which has no memory of past demand at all.
 
 #### Results
 
-R² (test) = 0.939, RMSE = 3,861 kW, MAE = 2,596 kW — trained on 2022–2024,tested on 2025.
+R² (test) = 0.939, RMSE = 3,861 kW, MAE = 2,596 kW.
 
 ![](outputs/figures/05_gam/05_13_gam_pdp.png)
 
-The partial dependence plots tell the story clearly. Temperature shows a U-shape: demand spikes in the cold (heating), dips in mild weather, and rises again in the heat (cooling). This is exactly what a linear model cannot capture, and exactly why we needed a GAM. Humidity and solar radiation are nearly flat, once temperature and the lag features are in the model, they add almost nothing. lag24 is the steepest curve of all: yesterday's demand at this hour is the single strongest predictor of today's.
+The partial dependence plots reveal what the model actually learned. Temperature shows a clear U-shape: demand spikes in the cold (heating), reaches its minimum around 20°C, and rises again in the heat (cooling). This is the result that justifies the GAM over the LM. A linear model draws one straight line through this and gets it wrong at both ends. Humidity and solar radiation are nearly flat, meaning once temperature and the lags are in the model, they add little independently. lag24 is the steepest curve of all, confirming that yesterday's demand is the strongest predictor of today's. Note that pygam does not center partial dependence terms by default, so the curve shapes matter, not the absolute y-axis values.
 
 ![](outputs/figures/05_gam/05_14_gam_diagnostics.png)
 
-The GAM summary confirmed all smooth terms have effective degrees of freedom between 14.8 and 15.8, well above 1, meaning every spline is genuinely non-linear and earning its place. Residuals show no systematic trend, though the ACF reveals autocorrelation at 24h and 48h lags, expected for hourly energy data.
+The GAM summary confirmed all smooth terms have effective degrees of freedom between 14.8 and 15.8 (well above 1), meaning every spline is genuinely capturing non-linearity. The is_weekend term was penalised to an EDoF of 0 since day of week already contains that information. Residuals show no systematic trend, though the ACF reveals autocorrelation at 24h and 48h lags, which is expected for hourly energy data.
 
 ![](outputs/figures/05_gam/05_15_gam_pred_vs_actual.png)
 
-The result speaks for itself: RMSE drops from 7,624 kW (LM) to 3,861 kW, a 49% improvement. Train and test R² differ by only 0.002, confirming the model generalises cleanly to 2025 with no overfitting.
+RMSE dropped from 7,624 kW (LM) to 3,861 kW, a 49% improvement. Train and test R² differ by only 0.002, confirming the model generalises cleanly to 2025 with no overfitting.
+
 
 ### SVM
 
