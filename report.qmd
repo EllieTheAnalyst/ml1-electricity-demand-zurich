@@ -217,23 +217,29 @@ All coefficients are on the log scale so exponentiating gives rate ratios. In au
 
 #### Approach
 
-The binary is_peak variable calls for logistic regression: a Binomial GLM with a logit link. The logit link maps linear combinations of predictors onto the (0,1) interval, guaranteeing valid probability outputs. The class imbalance (10% peak, 90% non-peak) is moderate and does not require oversampling at this level. A T:hour_cos interaction was added because the temperature effect on peak probability should be strongest at the times of day when peak hours actually occur.
+This model answers a different question: will this hour be a peak hour? That is a yes or no problem, so we used a Binomial GLM with a logit link, which outputs a probability between 0 and 1 directly interpretable as peak likelihood.
+
+Only about 10% of hours are peak hours, so the default threshold of 0.5 would miss too many. We lowered it to 0.3 because in the Swiss grid, failing to anticipate a peak risks leaving zones without power. Over-preparing is a much safer mistake than under-preparing.
+
+A T:hour_cos interaction was added because the temperature effect on peak probability should be strongest at the times of day when peak hours actually occur.
 
 #### Results
 
-AUC = 0.96, accuracy = 94%, McFadden R² = 0.53.
+AUC = 0.959, accuracy = 92%, McFadden R² (train) = 0.525.
 
-![](outputs/figures/04_binomial/11_binomial_diagnostics.png)
+![](outputs/figures/04_binomial/04_11_binomial_diagnostics.png)
 
-The calibration curve shows predicted probabilities tracking observed frequencies well in the 0-0.4 range. The probability histograms by true class show good separation: the non-peak class is concentrated near zero while the peak class has a wider spread reflecting genuine uncertainty about borderline hours.
+The calibration plot (on training data) shows the model produces honest probabilities, not just correct labels. Non-peak hours pile up near zero and peak hours spread across higher probabilities, showing the model has genuinely learned to separate the two classes.
 
-![](outputs/figures/04_binomial/12_binomial_roc_cm.png)
+![](outputs/figures/04_binomial/04_12_binomial_roc_cm.png)
 
-The ROC curve at AUC 0.96 is excellent for a model using only weather and time features. The confusion matrix at threshold 0.5 shows 97% recall for non-peak hours but 65% recall for actual peak hours. Moving the threshold from 0.5 to around 0.3 would substantially increase peak recall at the cost of more false alarms acceptable in operational contexts where missing a peak is more costly than a false alert.
+At threshold 0.3, the model catches 82% of real peak hours at a precision of 54%. It raises more false alarms than a stricter threshold would, but in a grid context that is the right tradeoff: better to over-prepare than to leave anyone without power.
 
 #### Coefficient interpretation
 
-Temperature has an odds ratio of exp(-0.172) = 0.84: each 1°C increase reduces the odds of a peak hour by about 16%. The hour cyclic features are the strongest predictors: the coefficient on hour_cos translates to an odds ratio of 0.05, meaning midday hours have odds 95% lower than the reference. Season effects are also strong: summer has a much higher baseline peak probability than autumn after controlling for temperature, reflecting heat wave peaks driven by a different mechanism than winter heating.
+Hour of day dominates, as expected: peaks happen in morning and evening windows. Sunny hours are less likely to be peaks (solar radiation odds ratio below 1). Season matters independently of temperature, reflecting that winter peaks come from heating load and summer peaks from cooling, two different physical mechanisms.
+
+One known limitation: is_weekend causes quasi-complete separation because weekends almost never have peak hours in Zurich (coefficient = -28.47, std_err = 14,699). This does not hurt predictions but makes that coefficient uninterpretable.
 
 
 ### GAM
