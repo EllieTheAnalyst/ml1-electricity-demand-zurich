@@ -304,17 +304,17 @@ We compared three architectures to assess the effect of depth and width: (64,32)
 
 #### Results
 
-RMSE (test) = 5,384 kW (7.3% of mean demand), MAE = 3,792 kW. Best architecture: (128,64,32).
+RMSE (test) = 2,661 kW (3.6% of mean demand), MAE = 2,038 kW. Best architecture: (128,64).
 
 ![](outputs/figures/07_nn/nn_combined.png)
 
-All three architectures converge in under 120 epochs. The (128,64,32) network reaches a slightly lower training loss than the other two, but the differences are small and converged values are close. There is no sign of instability or oscillation in any of the curves, which means the Adam default learning rate is appropriate for this dataset. Early stopping terminates training before any architecture reaches 500 iterations, suggesting that overfitting would become a concern with more epochs but is well controlled here.
+All three architectures converge in under 120 epochs. The (128,64) network reaches a slightly lower training loss than the other two, but the differences are small and converged values are close. There is no sign of instability or oscillation in any of the curves, which means the Adam default learning rate is appropriate for this dataset. Early stopping terminates training before any architecture reaches 1000 iterations, suggesting that overfitting would become a concern with more epochs but is well controlled here.
 
 #### Architecture comparison
 
 The small gap between architectures indicates that the expressiveness of the network is not the binding constraint for this dataset. Increasing depth further would likely not help without also increasing the training set size or using regularisation techniques like dropout.
 
-The NN performs between the parametric models and the SVM: RMSE 5,384 kW versus 7,624 kW (LM) and 881 kW (SVM). The scatter plot shows a tighter cloud than the LM and better coverage of the upper demand range, but the SVM remains more accurate on the most extreme values. One plausible reason is that the SVR with a well-tuned RBF kernel is effectively a non-parametric kernel smoother with a strong inductive bias for this type of data, while the MLP must learn this structure from weights. More careful tuning of learning rate, weight decay, and network width might close the gap; that is left for future work.
+The NN performs between the parametric models and the SVM: RMSE 2,661 kW versus 7,624 kW (LM) and 881 kW (SVM). The scatter plot shows a tighter cloud than the LM and better coverage of the upper demand range, but the SVM remains more accurate on the most extreme values. One plausible reason is that the SVR with a well-tuned RBF kernel is effectively a non-parametric kernel smoother with a strong inductive bias for this type of data, while the MLP must learn this structure from weights.
 
 
 ### Cross-Validation
@@ -340,7 +340,7 @@ The cross-validation confirms that none of the three kernels degrades badly on a
 
 ## Which Model Should EWZ Trust?
 
-> Six models, six perspectives. Here we compare them directly, and explain what each result means for real-world grid operations.
+> Six models, six perspectives. Here we compare them directly — and explain what each result means for real-world grid operations.
 
 ![](outputs/figures/09_conclusions/model_comparison.png)
 
@@ -348,26 +348,26 @@ The cross-validation confirms that none of the three kernels degrades badly on a
 
 **Regression models (target: demand in kW)**
 
-| Model | RMSE (kW) | MAE (kW) | R² train |
-|---|---|---|---|
-| LM | 7,624 | 6,126 | 0.79 |
-| GAM | 7,200 | 5,829 | 0.81 |
-| NN (128,64,32) | 5,384 | 3,792 | 0.97 |
-| SVM | 881 | 654 | 0.94 |
+| Model | RMSE (kW) | MAE (kW) | R² train | R² test |
+|---|---|---|---|---|
+| LM | 7,624 | 6,126 | 0.786 | 0.752 |
+| GAM | 3,861 | 2,596 | 0.937 | 0.939 |
+| NN (128,64) | 2,661 | 2,038 | 0.975 | 0.971 |
+| SVM | 881 | 654 | 0.997 | 0.997 |
 
 **Classification and count models**
 
 | Model | Task | Metric | Value |
 |---|---|---|---|
-| GLM Poisson | peak hours/day (count) | RMSE | 2.58 h/day |
+| GLM Poisson | peak hours/day (count) | RMSE | 2.61 h/day |
 | GLM Poisson | | R² | 0.69 |
-| GLM Binomial | is_peak (binary) | AUC | 0.96 |
-| GLM Binomial | | Accuracy | 94% |
+| GLM Binomial | is_peak (binary) | AUC | 0.959 |
+| GLM Binomial | | Accuracy | 92% |
 
-The four regression models show a clear progression: each step up in complexity reduces test RMSE. The LM establishes a baseline at 7,624 kW. The GAM's non-linear splines reduce RMSE by 5.5%, with most of the gain coming from the temperature curve. The biggest jump comes with the SVM and NN, which reduce RMSE by 88% and 29% respectively over the LM, capturing non-linear interactions between temperature, hour, and season that additive models cannot represent.
+The four regression models show a clear progression: each step up in complexity reduces test RMSE. The LM establishes a baseline at 7,624 kW. The GAM's non-linear splines reduce RMSE by 49%, with most of the gain coming from the temperature curve. The biggest jump comes with the SVM and NN, which reduce RMSE by 88% and 65% respectively over the LM, capturing non-linear interactions between temperature, hour, and season that additive models cannot represent.
 
-> **Key finding:** The Neural Network explains 97% of variance in hourly demand. With a mean load of approximately 74,000 kW, its RMSE of 5,384 kW corresponds to roughly **7.3% of mean demand** a strong result for operational grid planning at EWZ.
+> The Neural Network explains 97.1% of variance in hourly demand. With a mean load of approximately 74,000 kW, its RMSE of 2,661 kW corresponds to roughly 3.6% of mean demand, a strong result for operational grid planning at EWZ.
 
 The SVM achieves the lowest RMSE overall (881 kW, 1.2% of mean demand). Both the SVM and NN used lagged demand features (t-1, t-24, t-168), making the comparison between them fair on that dimension. The SVM's advantage over the NN likely reflects the strength of the RBF kernel as a non-parametric smoother for this type of structured tabular data.
 
-The GLM Binomial stands out as the clearest practical result. An AUC of 0.96 using only weather and time variables means peak hours are largely predictable from publicly available data well in advance, with direct relevance for grid operations.
+The GLM Binomial stands out as the clearest practical result. An AUC of 0.959 using only weather and time variables means peak hours are largely predictable from publicly available data well in advance, with direct relevance for grid operations.
