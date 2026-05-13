@@ -35,7 +35,7 @@ Both datasets are open data from the City of Zurich.
 |---|---|
 | Tamara Marcet | Linear Model (02), GLM Poisson (03), Conclusions (09), Report, Submission | 
 | Paula Barghout | Preprocessing (00), EDA (01), GLM Binomial (04), GAM (05), Cross-validation (08), Conclusions (09), Report |
-| Elena Fuchs | SVM (06), Neural Network (07), Conclusions (09), Report (Focus Storytelling, Client-Focus & Aesthetics), Final Project Walkthrough |
+| Elena Fuchs | SVM (06), Neural Network (07), Conclusions (09), Report (Focus: Visual Design) |
 
 ---
 
