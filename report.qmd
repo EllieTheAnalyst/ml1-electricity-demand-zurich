@@ -192,7 +192,7 @@ The daily peak hour count (peak_hours_per_day) is a non-negative integer, which 
 
 #### Results
 
-RMSE = 2.58 h/day, MAE = 1.44 h/day, R² = 0.69. Overdispersion ratio = 1.82.
+RMSE = 2.61 h/day, MAE = 1.43 h/day, Pseudo-R² = 0.726. Overdispersion ratio = 1.619.
 
 ![](outputs/figures/03_poisson/09_poisson_diagnostics.png)
 
@@ -200,7 +200,7 @@ The rootogram shows the model fits the 0-2 range well but underestimates days wi
 
 #### Overdispersion note
 
-The Poisson model assumes variance equals the mean. With a dispersion ratio of 1.82, the data has about 80% more variance than the model expects a known limitation compounded by the zero-inflation in the target. A **Negative Binomial GLM** would be the technically superior alternative, as it adds a free dispersion parameter that absorbs this extra variance and produces better-calibrated standard errors.
+The Poisson model assumes variance equals the mean. With an improved dispersion ratio of 1.619, the data has some clustered variance than the model expects—a natural reflection of grid peaks clumping together during extreme weather events **Negative Binomial GLM** would be the technically superior alternative, as it adds a free dispersion parameter that absorbs this extra variance and produces better-calibrated standard errors.
 
 ![](outputs/figures/03_poisson/10_poisson_pred_vs_actual.png)
 
@@ -225,7 +225,7 @@ A T:hour_cos interaction was added because the temperature effect on peak probab
 
 #### Results
 
-AUC = 0.959, accuracy = 92%, McFadden R² (train) = 0.525.
+AUC = 0.959, Accuracy = 92%, McFadden R² (train) = 0.525.
 
 ![](outputs/figures/04_binomial/04_11_binomial_diagnostics.png)
 
@@ -233,7 +233,7 @@ The calibration plot (on training data) shows the model produces honest probabil
 
 ![](outputs/figures/04_binomial/04_12_binomial_roc_cm.png)
 
-At threshold 0.3, the model catches 82% of real peak hours at a precision of 54%. It raises more false alarms than a stricter threshold would, but in a grid context that is the right tradeoff: better to over-prepare than to leave anyone without power.
+At a threshold of 0.3, the model achieves a vital 82% Recall for peak events. While it raises more false alarms than a stricter threshold would (Precision: 54%), in a utility context this is the optimal tradeoff: over-preparing to secure grid stability is significantly safer than missing a critical blackout event.
 
 #### Coefficient interpretation
 
