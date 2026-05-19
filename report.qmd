@@ -258,7 +258,8 @@ R² (test) = 0.939, RMSE = 3,861 kW, MAE = 2,596 kW.
 
 ![](outputs/figures/05_gam/05_13_gam_pdp.png)
 
-The partial dependence plots reveal what the model actually learned. Temperature shows a clear U-shape: demand spikes in the cold (heating), reaches its minimum around 20°C, and rises again in the heat (cooling). This is the result that justifies the GAM over the LM. A linear model draws one straight line through this and gets it wrong at both ends. Humidity and solar radiation are nearly flat, meaning once temperature and the lags are in the model, they add little independently. lag24 is the steepest curve of all, confirming that yesterday's demand is the strongest predictor of today's. Note that pygam does not center partial dependence terms by default, so the curve shapes matter, not the absolute y-axis values.
+The partial dependence plots reveal what the model actually learned.**Temperature**, The vertical axis tracks relative changes in demand (higher means more electricity usage). When it is cold (below 10°C), the curve sits high up and slopes downward as weather warms up, representing winter heating shutting off. Between 10°C and 20°C, it forms a smooth, gentle transitional curve as climate conditions moderate. Above 20°C, the spline bends slightly upward, successfully capturing the secondary cooling load from air conditioning during summer heatwaves.
+**Humidity and solar radiation**, are nearly flat, meaning once temperature and the lags are in the model, they add little independently. **lag24**, is the steepest curve of all, confirming that yesterday's demand is the strongest predictor of today's. Note that pygam does not center partial dependence terms by default, so the curve shapes matter, not the absolute y-axis values.
 
 ![](outputs/figures/05_gam/05_14_gam_diagnostics.png)
 
@@ -266,7 +267,7 @@ The GAM summary confirmed all smooth terms have effective degrees of freedom bet
 
 ![](outputs/figures/05_gam/05_15_gam_pred_vs_actual.png)
 
-RMSE dropped from 7,624 kW (LM) to 3,861 kW, a 49% improvement. Train and test R² differ by only 0.002, confirming the model generalises cleanly to 2025 with no overfitting.
+RMSE is 3,861 kW, a 49% improvement. Train and test R² differ by only 0.002, confirming the model generalises cleanly to 2025 with no overfitting.
 
 
 ### SVM
